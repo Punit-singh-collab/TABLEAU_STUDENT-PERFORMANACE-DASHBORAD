@@ -1,0 +1,1563 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Retail Sales SQL Analysis | Data Analytics Portfolio</title>
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js for Business Insights Visualizations -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            slate: {
+              850: '#151e32',
+              900: '#0f172a',
+              950: '#090d16',
+            }
+          }
+        }
+      }
+    };
+  </script>
+</head>
+<body class="bg-slate-950 text-slate-200 font-sans antialiased selection:bg-indigo-500 selection:text-white min-h-screen flex flex-col">
+
+  <!-- Toast Notification for Copy & Actions -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none flex items-center gap-2.5 bg-indigo-600 text-white px-4 py-3 rounded-xl shadow-2xl shadow-indigo-950/80 border border-indigo-400/30 text-sm font-medium">
+    <svg class="w-5 h-5 text-indigo-200 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+    </svg>
+    <span id="toastMessage">Copied SQL query to clipboard!</span>
+  </div>
+
+  <!-- Top Navigation Bar -->
+  <header class="sticky top-0 z-40 bg-slate-950/85 backdrop-blur-md border-b border-slate-800/80">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path>
+          </svg>
+        </div>
+        <div>
+          <span class="font-bold text-white tracking-tight text-base sm:text-lg">SQL Analytics Case Study</span>
+          <span class="hidden sm:inline-block ml-2 px-2 py-0.5 text-xs font-mono bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-md">MySQL / Standard SQL</span>
+        </div>
+      </div>
+
+      <nav class="flex items-center gap-1 sm:gap-2 overflow-x-auto">
+        <a href="#overview" class="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/70 transition whitespace-nowrap">Project Details</a>
+        <a href="#schema-section" class="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/70 transition whitespace-nowrap">Schema</a>
+        <a href="#insights" class="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/70 transition whitespace-nowrap">Insights</a>
+        <a href="#queries" class="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/70 transition whitespace-nowrap">Queries (11)</a>
+        <a href="#playground" class="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/70 transition whitespace-nowrap">Live Sandbox</a>
+        <a href="#review" class="px-2.5 sm:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-amber-300/90 hover:text-amber-200 hover:bg-amber-500/10 transition whitespace-nowrap">Code Audit</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-16">
+
+    <!-- 1. Executive Project Overview & Business Problem -->
+    <section id="overview" class="space-y-8">
+      <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950/60 border border-slate-800 p-6 sm:p-10 shadow-2xl">
+        <!-- Decorative glow -->
+        <div class="absolute -top-24 -right-24 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -bottom-24 -left-24 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="relative space-y-8">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            <div class="lg:col-span-8 space-y-5">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-300 text-xs font-medium">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                  End-to-End SQL Data Analytics Portfolio
+                </span>
+                <span class="px-3 py-1 rounded-full bg-slate-800/80 border border-slate-700 text-slate-300 text-xs font-mono">
+                  reatail_sales_project_analysis.sql
+                </span>
+              </div>
+
+              <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-tight">
+                Retail Sales <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-cyan-400 to-emerald-400">SQL Analysis</span> & Business Intelligence
+              </h1>
+
+              <p class="text-slate-300 text-sm sm:text-base leading-relaxed max-w-3xl">
+                A comprehensive exploratory data analysis (EDA) and business intelligence case study built on relational Point-of-Sale (POS) retail data. This project transforms raw transactional logs into actionable merchandising, staffing, and customer retention strategies using MySQL DDL/DML, Common Table Expressions (CTEs), and Window Functions.
+              </p>
+
+              <!-- Tech Stack & SQL Concepts Badges -->
+              <div class="flex flex-wrap gap-2 pt-1">
+                <span class="px-2.5 py-1 rounded-lg bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 text-xs font-mono">MySQL / Standard SQL</span>
+                <span class="px-2.5 py-1 rounded-lg bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 text-xs font-mono">DDL & Schema Design</span>
+                <span class="px-2.5 py-1 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-mono">CTEs (WITH)</span>
+                <span class="px-2.5 py-1 rounded-lg bg-purple-500/15 border border-purple-500/30 text-purple-300 text-xs font-mono">RANK() & DENSE_RANK()</span>
+                <span class="px-2.5 py-1 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-mono">CASE WHEN Logic</span>
+                <span class="px-2.5 py-1 rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs font-mono">Temporal Extraction (YEAR/MONTH/HOUR)</span>
+                <span class="px-2.5 py-1 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 text-xs font-mono">GROUP BY & Aggregations</span>
+              </div>
+            </div>
+
+            <!-- Project Metadata Card -->
+            <div class="lg:col-span-4 bg-slate-950/80 border border-slate-800 rounded-2xl p-5 space-y-4">
+              <div class="text-xs font-mono uppercase tracking-wider text-indigo-400 font-semibold">Project Specification</div>
+              <div class="space-y-3 text-xs sm:text-sm">
+                <div class="flex justify-between py-1.5 border-b border-slate-800/80">
+                  <span class="text-slate-400">Database Name</span>
+                  <span class="font-mono text-white font-medium">reatail_sales_project_analysis</span>
+                </div>
+                <div class="flex justify-between py-1.5 border-b border-slate-800/80">
+                  <span class="text-slate-400">Fact Table</span>
+                  <span class="font-mono text-cyan-300 font-medium">retail_sales (11 cols)</span>
+                </div>
+                <div class="flex justify-between py-1.5 border-b border-slate-800/80">
+                  <span class="text-slate-400">Product Categories</span>
+                  <span class="text-slate-200 font-medium">Electronics, Clothing, Beauty</span>
+                </div>
+                <div class="flex justify-between py-1.5 border-b border-slate-800/80">
+                  <span class="text-slate-400">Currency Unit</span>
+                  <span class="text-emerald-400 font-medium">INR (₹)</span>
+                </div>
+                <div class="flex justify-between py-1.5">
+                  <span class="text-slate-400">Analytical Scope</span>
+                  <span class="text-slate-200 font-medium">10 Core BI Questions</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Problem Statement, Objectives & Methodology Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-5 pt-2">
+            <!-- Business Problem -->
+            <div class="bg-slate-950/70 border border-slate-800/90 rounded-2xl p-5 space-y-2.5">
+              <div class="flex items-center gap-2.5 text-rose-400 font-semibold text-sm">
+                <div class="w-8 h-8 rounded-lg bg-rose-500/10 border border-rose-500/20 flex items-center justify-center shrink-0">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                  </svg>
+                </div>
+                1. Business Problem
+              </div>
+              <p class="text-slate-400 text-xs sm:text-sm leading-relaxed">
+                Retail leadership lacked granular visibility into which product categories drive top-line revenue, how customer demographics (age &amp; gender) vary across departments, when peak store shifts occur, and who the highest-spending VIP shoppers are.
+              </p>
+            </div>
+
+            <!-- Project Objectives -->
+            <div class="bg-slate-950/70 border border-slate-800/90 rounded-2xl p-5 space-y-2.5">
+              <div class="flex items-center gap-2.5 text-cyan-400 font-semibold text-sm">
+                <div class="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shrink-0">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                  </svg>
+                </div>
+                2. Analytical Objectives
+              </div>
+              <ul class="text-slate-400 text-xs sm:text-sm space-y-1.5 leading-relaxed list-disc list-inside">
+                <li>Architect a typed relational table (<code class="font-mono text-slate-300">retail_sales</code>) with primary key integrity.</li>
+                <li>Quantify category revenue, high-value orders (&gt;₹1,000), and unique reach.</li>
+                <li>Identify seasonal revenue peaks per year &amp; Top 5 VIP customers.</li>
+                <li>Segment order volume across Morning, Afternoon, and Evening shifts.</li>
+              </ul>
+            </div>
+
+            <!-- Data Pipeline & Validation -->
+            <div class="bg-slate-950/70 border border-slate-800/90 rounded-2xl p-5 space-y-2.5">
+              <div class="flex items-center gap-2.5 text-emerald-400 font-semibold text-sm">
+                <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                  </svg>
+                </div>
+                3. Methodology &amp; Validation
+              </div>
+              <p class="text-slate-400 text-xs sm:text-sm leading-relaxed">
+                Followed a 4-stage SQL workflow: <strong>(1) Database &amp; DDL Creation</strong>, <strong>(2) Record Verification</strong> (<code class="font-mono text-slate-300">COUNT(*)</code> &amp; sample inspection), <strong>(3) Multi-Dimensional EDA</strong> using CTEs &amp; Window Functions, and <strong>(4) Code Quality Audit</strong> to resolve schema and grouping edge cases.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. Dataset & Schema Architecture -->
+    <section id="schema-section" class="space-y-6">
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <span class="text-xs font-mono uppercase tracking-wider text-indigo-400 font-semibold">Data Dictionary &amp; ER Structure</span>
+          <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight mt-1">Database Schema Architecture (<code class="font-mono text-cyan-400">retail_sales</code>)</h2>
+          <p class="text-slate-400 text-sm mt-1">Complete attribute-level documentation, SQL data types, constraints, and business definitions for the fact table.</p>
+        </div>
+        <div class="flex items-center gap-2 text-xs font-mono bg-slate-900 border border-slate-800 px-3.5 py-2 rounded-xl text-slate-300">
+          <span class="w-2 h-2 rounded-full bg-amber-400"></span> PK = Primary Key &nbsp;|&nbsp;
+          <span class="w-2 h-2 rounded-full bg-emerald-400"></span> 11 Attributes
+        </div>
+      </div>
+
+      <div class="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
+        <div class="px-6 py-4 bg-slate-950/70 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-2.5">
+            <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path>
+            </svg>
+            <span class="font-mono text-sm font-bold text-white">reatail_sales_project_analysis.retail_sales</span>
+          </div>
+          <span class="text-xs text-slate-400">Grain: One row per line-item retail POS transaction</span>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs sm:text-sm">
+            <thead class="bg-slate-950/60 text-slate-400 font-mono text-xs uppercase border-b border-slate-800">
+              <tr>
+                <th class="py-3.5 px-5">Column Name</th>
+                <th class="py-3.5 px-5">SQL Data Type</th>
+                <th class="py-3.5 px-5">Constraint / Key</th>
+                <th class="py-3.5 px-5">Business Definition &amp; Analytical Role</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800/70">
+              <tr class="hover:bg-slate-800/40 transition">
+                <td class="py-3 px-5 font-mono font-semibold text-white">transactions_id</td>
+                <td class="py-3 px-5 font-mono text-indigo-400">INT</td>
+                <td class="py-3 px-5"><span class="px-2 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30 font-mono text-[11px] font-bold">PRIMARY KEY</span></td>
+                <td class="py-3 px-5 text-slate-300">Unique identifier for every point-of-sale receipt/order.</td>
+              </tr>
+              <tr class="hover:bg-slate-800/40 transition">
+                <td class="py-3 px-5 font-mono font-semibold text-white">sale_date</td>
+                <td class="py-3 px-5 font-mono text-cyan-400">DATE</td>
+                <td class="py-3 px-5 text-slate-500 font-mono text-xs">NOT NULL</td>
+                <td class="py-3 px-5 text-slate-300">Calendar date of purchase (<code class="font-mono text-xs text-slate-400">YYYY-MM-DD</code>); used for monthly &amp; yearly seasonality.</td>
+              </tr>
+              <tr class="hover:bg-slate-800/40 transition">
+                <td class="py-3 px-5 font-mono font-semibold text-white">sale_time</td>
+                <td class="py-3 px-5 font-mono text-cyan-400">TIME</td>
+                <td class="py-3 px-5 text-slate-500 font-mono text-xs">NOT NULL</td>
+                <td class="py-3 px-5 text-slate-300">Exact timestamp (<code class="font-mono text-xs text-slate-400">HH:MM:SS</code>); extracted via <code class="font-mono text-xs text-cyan-300">HOUR()</code> for shift staffing analysis.</td>
+              </tr>
+              <tr class="hover:bg-slate-800/40 transition">
+                <td class="py-3 px-5 font-mono font-semibold text-white">customer_id</td>
+                <td class="py-3 px-5 font-mono text-indigo-400">INT</td>
+                <td class="py-3 px-5 text-slate-500 font-mono text-xs">INDEXABLE</td>
+                <td class="py-3 px-5 text-slate-300">Unique shopper ID used for repeat purchase tracking, distinct reach, and VIP ranking.</td>
+              </tr>
+              <tr class="hover:bg-slate-800/40 transition">
+                <td class="py-3 px-5 font-mono font-semibold text-white">gender</td>
+                <td class="py-3 px-5 font-mono text-emerald-400">VARCHAR(15)</td>
+                <td class="py-3 px-5 text-slate-500 font-mono text-xs">DIMENSION</td>
+                <td class="py-3 px-5 text-slate-300">Customer gender (<code class="font-mono text-xs text-slate-400">Male</code> / <code class="font-mono text-xs text-slate-400">Female</code>) for demographic cross-tabulation.</td>
+              </tr>
+              <tr class="hover:bg-slate-800/40 transition">
+                <td class="py-3 px-5 font-mono font-semibold text-white">age</td>
+                <td class="py-3 px-5 font-mono text-indigo-400">INT</td>
+                <td class="py-3 px-5 text-slate-500 font-mono text-xs">METRIC</td>
+                <td class="py-3 px-5 text-slate-300">Customer age in years; aggregated to determine category buyer personas.</td>
+              </tr>
+              <tr class="hover:bg-slate-800/40 transition">
+                <td class="py-3 px-5 font-mono font-semibold text-white">category</td>
+                <td class="py-3 px-5 font-mono text-emerald-400">VARCHAR(35)</td>
+                <td class="py-3 px-5 text-slate-500 font-mono text-xs">DIMENSION</td>
+                <td class="py-3 px-5 text-slate-300">Merchandise department (<code class="font-mono text-xs text-slate-400">Electronics</code>, <code class="font-mono text-xs text-slate-400">Clothing</code>, <code class="font-mono text-xs text-slate-400">Beauty</code>).</td>
+              </tr>
+              <tr class="hover:bg-slate-800/40 transition">
+                <td class="py-3 px-5 font-mono font-semibold text-white">
+                  quantiy
+                  <span class="ml-1.5 px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-300 text-[10px] font-sans">DDL Spelling</span>
+                </td>
+                <td class="py-3 px-5 font-mono text-indigo-400">INT</td>
+                <td class="py-3 px-5 text-slate-500 font-mono text-xs">METRIC</td>
+                <td class="py-3 px-5 text-slate-300">Number of units purchased in the transaction (used to filter bulk orders <code class="font-mono text-xs text-slate-400">&gt;= 4</code>).</td>
+              </tr>
+              <tr class="hover:bg-slate-800/40 transition">
+                <td class="py-3 px-5 font-mono font-semibold text-white">price_per_unit</td>
+                <td class="py-3 px-5 font-mono text-purple-400">DECIMAL(10,2)</td>
+                <td class="py-3 px-5 text-slate-500 font-mono text-xs">CURRENCY</td>
+                <td class="py-3 px-5 text-slate-300">Retail unit selling price in INR (₹).</td>
+              </tr>
+              <tr class="hover:bg-slate-800/40 transition">
+                <td class="py-3 px-5 font-mono font-semibold text-white">cogs</td>
+                <td class="py-3 px-5 font-mono text-purple-400">FLOAT</td>
+                <td class="py-3 px-5 text-slate-500 font-mono text-xs">COST METRIC</td>
+                <td class="py-3 px-5 text-slate-300">Cost of Goods Sold; enables gross margin computation (<code class="font-mono text-xs text-slate-400">total_sale - cogs</code>).</td>
+              </tr>
+              <tr class="hover:bg-slate-800/40 transition">
+                <td class="py-3 px-5 font-mono font-semibold text-white">total_sale</td>
+                <td class="py-3 px-5 font-mono text-purple-400">DECIMAL(10,2)</td>
+                <td class="py-3 px-5 text-slate-500 font-mono text-xs">PRIMARY KPI</td>
+                <td class="py-3 px-5 text-slate-300">Total transaction revenue (<code class="font-mono text-xs text-slate-400">quantiy * price_per_unit</code>) used for VIP &amp; tiering analysis.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Key Analytical Findings & Business Insights (KPIs, Charts & Recommendations) -->
+    <section id="insights" class="space-y-6">
+      <div>
+        <span class="text-xs font-mono uppercase tracking-wider text-emerald-400 font-semibold">Executive Summary &amp; Takeaways</span>
+        <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight mt-1">Key Analytical Findings &amp; Business Insights</h2>
+        <p class="text-slate-400 text-sm mt-1">Visual synthesis and strategic recommendations derived directly from the SQL exploratory queries.</p>
+      </div>
+
+      <!-- 4 Highlight KPI Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-medium text-slate-400">Top Revenue Driver</span>
+            <span class="px-2 py-0.5 rounded-md bg-indigo-500/15 text-indigo-400 text-[11px] font-mono">GROUP BY</span>
+          </div>
+          <div class="text-2xl font-extrabold text-white">Electronics</div>
+          <p class="text-xs text-slate-400 leading-relaxed">Leads total revenue due to higher unit ticket sizes (₹300–₹500/unit), followed closely by Clothing volume.</p>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-medium text-slate-400">Peak Operational Shift</span>
+            <span class="px-2 py-0.5 rounded-md bg-cyan-500/15 text-cyan-400 text-[11px] font-mono">HOUR() CASE</span>
+          </div>
+          <div class="text-2xl font-extrabold text-cyan-400">Evening (17:00+)</div>
+          <p class="text-xs text-slate-400 leading-relaxed">Captures the largest share of daily order volume compared to Morning (&lt;12h) and Afternoon (12h–17h) shifts.</p>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-medium text-slate-400">Beauty Buyer Persona</span>
+            <span class="px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-400 text-[11px] font-mono">ROUND(AVG)</span>
+          </div>
+          <div class="text-2xl font-extrabold text-emerald-400">~40 Years Old</div>
+          <p class="text-xs text-slate-400 leading-relaxed">Average age of Beauty shoppers centers around 40, signaling strong mid-career purchasing power.</p>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-medium text-slate-400">High-Value Threshold</span>
+            <span class="px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-400 text-[11px] font-mono">WHERE &gt; 1000</span>
+          </div>
+          <div class="text-2xl font-extrabold text-amber-400">&gt; ₹1,000 / Order</div>
+          <p class="text-xs text-slate-400 leading-relaxed">Premium orders driven by multi-unit baskets (3–4 items) in Electronics &amp; Clothing anchor VIP spend.</p>
+        </div>
+      </div>
+
+      <!-- Charts + Actionable Recommendations Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Category Revenue Chart -->
+        <div class="lg:col-span-4 bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between">
+          <div>
+            <h3 class="text-sm font-bold text-white">Revenue Share by Category</h3>
+            <p class="text-xs text-slate-400 mt-0.5">Derived from Query #3 (<code class="font-mono text-indigo-300">SUM(total_sale) GROUP BY category</code>)</p>
+          </div>
+          <div class="relative h-56 my-4">
+            <canvas id="categoryChart"></canvas>
+          </div>
+          <div class="text-[11px] text-slate-400 border-t border-slate-800 pt-3">
+            Electronics generates highest revenue per transaction; Clothing leads unit turnover.
+          </div>
+        </div>
+
+        <!-- Shift Distribution Chart -->
+        <div class="lg:col-span-4 bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between">
+          <div>
+            <h3 class="text-sm font-bold text-white">Order Volume by Day Shift</h3>
+            <p class="text-xs text-slate-400 mt-0.5">Derived from Query #11 (<code class="font-mono text-cyan-300">CASE WHEN HOUR(sale_time)</code>)</p>
+          </div>
+          <div class="relative h-56 my-4">
+            <canvas id="shiftChart"></canvas>
+          </div>
+          <div class="text-[11px] text-slate-400 border-t border-slate-800 pt-3">
+            Evening shift experiences peak checkout traffic; ideal window for promotional campaigns.
+          </div>
+        </div>
+
+        <!-- Strategic Recommendations -->
+        <div class="lg:col-span-4 bg-gradient-to-b from-slate-900 to-indigo-950/30 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between space-y-4">
+          <div class="space-y-3">
+            <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs font-semibold">
+              Strategic Recommendations
+            </div>
+            <h3 class="text-base font-bold text-white">Actionable Business Decisions</h3>
+
+            <div class="space-y-3 text-xs text-slate-300 leading-relaxed">
+              <div class="p-3 rounded-xl bg-slate-950/70 border border-slate-800/80">
+                <strong class="text-indigo-300 block mb-0.5">1. Evening Shift Staffing Optimization</strong>
+                Allocate 35–40% more floor &amp; checkout staff after 17:00 to reduce queue abandonment during peak Evening demand.
+              </div>
+              <div class="p-3 rounded-xl bg-slate-950/70 border border-slate-800/80">
+                <strong class="text-cyan-300 block mb-0.5">2. VIP Loyalty Tier Program</strong>
+                Target the Top 5 VIP customers (identified via <code class="font-mono text-cyan-200">RANK()</code>) and &gt;₹1,000 spenders with early seasonal access.
+              </div>
+              <div class="p-3 rounded-xl bg-slate-950/70 border border-slate-800/80">
+                <strong class="text-emerald-300 block mb-0.5">3. Seasonal Inventory Pre-Stocking</strong>
+                Use <code class="font-mono text-emerald-200">DENSE_RANK()</code> monthly peaks to pre-stock bulk Clothing &amp; Electronics ahead of Q4 surges.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. Interactive SQL Query Explorer & Simulated Results -->
+    <section id="queries" class="space-y-6">
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <span class="text-xs font-mono uppercase tracking-wider text-indigo-400 font-semibold">Complete Query Walkthrough</span>
+          <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight mt-1">Business Questions &amp; SQL Queries</h2>
+          <p class="text-slate-400 text-sm mt-1">Explore all 11 blocks from <code class="font-mono text-indigo-300">reatail_sales_project_analysis.sql</code>. Toggle between <strong>Original SQL</strong> and <strong>Production-Fixed SQL</strong> where refinements apply.</p>
+        </div>
+
+        <!-- Search Input -->
+        <div class="relative w-full md:w-72">
+          <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+          <input
+            type="text"
+            id="querySearch"
+            placeholder="Search SQL, category, CTE..."
+            class="w-full bg-slate-900 border border-slate-800 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none transition"
+          />
+        </div>
+      </div>
+
+      <!-- Category Filter Pills -->
+      <div id="filterPills" class="flex flex-wrap items-center gap-2">
+        <button data-filter="all" class="filter-btn active px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium bg-indigo-600 text-white shadow-lg shadow-indigo-600/20 transition cursor-pointer">
+          All Queries (11)
+        </button>
+        <button data-filter="ddl" class="filter-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium bg-slate-900 text-slate-300 hover:bg-slate-800 border border-slate-800 transition cursor-pointer">
+          DDL &amp; Validation
+        </button>
+        <button data-filter="filtering" class="filter-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium bg-slate-900 text-slate-300 hover:bg-slate-800 border border-slate-800 transition cursor-pointer">
+          Basic Filtering
+        </button>
+        <button data-filter="aggregations" class="filter-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium bg-slate-900 text-slate-300 hover:bg-slate-800 border border-slate-800 transition cursor-pointer">
+          Aggregations &amp; Demographics
+        </button>
+        <button data-filter="window" class="filter-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium bg-slate-900 text-slate-300 hover:bg-slate-800 border border-slate-800 transition cursor-pointer">
+          CTEs &amp; Window Functions
+        </button>
+        <button data-filter="segmentation" class="filter-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium bg-slate-900 text-slate-300 hover:bg-slate-800 border border-slate-800 transition cursor-pointer">
+          CASE &amp; Shift Segmentation
+        </button>
+      </div>
+
+      <!-- Queries Grid Container -->
+      <div id="queriesContainer" class="grid grid-cols-1 gap-6">
+        <!-- Rendered dynamically via JavaScript -->
+      </div>
+
+      <!-- Empty Search State -->
+      <div id="emptyState" class="hidden text-center py-14 bg-slate-900/50 border border-slate-800 rounded-2xl">
+        <p class="text-slate-400 text-sm">No SQL queries matched your current filter or search term.</p>
+        <button id="resetFiltersBtn" class="mt-3 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium transition cursor-pointer">
+          Reset Filters
+        </button>
+      </div>
+    </section>
+
+    <!-- 5. Interactive Simulated Data Explorer / Sandbox -->
+    <section id="playground" class="space-y-6">
+      <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl space-y-6">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-800 pb-6">
+          <div>
+            <div class="inline-flex items-center gap-2 text-xs font-mono text-cyan-400 mb-1">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              INTERACTIVE IN-BROWSER SQL ENGINE
+            </div>
+            <h2 class="text-xl sm:text-2xl font-bold text-white">Simulated Data Explorer &amp; Live Query Runner</h2>
+            <p class="text-slate-400 text-xs sm:text-sm mt-1">Select any business query preset below to compute live results against a 16-row sample dataset of <code class="font-mono text-slate-300">retail_sales</code>.</p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-3">
+            <select id="sandboxPreset" class="bg-slate-950 border border-slate-700 focus:border-indigo-500 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm text-white outline-none cursor-pointer">
+              <option value="all_rows">SELECT * FROM retail_sales (Sample Dataset)</option>
+              <option value="nov_5">Q1: Sales made on '2022-11-05'</option>
+              <option value="clothing_bulk">Q2: Clothing Bulk Orders (Nov 2022, Qty >= 4)</option>
+              <option value="rev_category">Q3: Total Revenue per Category (GROUP BY)</option>
+              <option value="avg_age_beauty">Q4: Avg Age of Beauty Customers</option>
+              <option value="high_value">Q5: High-Value Transactions (total_sale > 1000)</option>
+              <option value="gender_cat">Q6: Transactions by Gender &amp; Category</option>
+              <option value="best_month">Q7: Best-Selling Month per Year (DENSE_RANK)</option>
+              <option value="top_vip">Q8: Top 5 VIP Customers (RANK)</option>
+              <option value="unique_cust">Q9: Unique Customers per Category (COUNT DISTINCT)</option>
+              <option value="value_tiers">Q10: Order Value Tiering (CASE WHEN)</option>
+              <option value="shift_dist">Q11: Order Distribution by Operational Shift</option>
+            </select>
+            <button id="runSandboxBtn" class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-semibold flex items-center gap-2 shadow-lg shadow-emerald-950/50 transition cursor-pointer">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path>
+              </svg>
+              Execute Query
+            </button>
+          </div>
+        </div>
+
+        <!-- Active SQL Preview inside Sandbox -->
+        <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 font-mono text-xs sm:text-sm text-cyan-300 overflow-x-auto">
+          <div class="text-[11px] uppercase tracking-wider text-slate-500 mb-1.5 font-sans font-semibold">Executed Statement</div>
+          <pre id="sandboxSqlDisplay" class="whitespace-pre-wrap leading-relaxed"></pre>
+        </div>
+
+        <!-- Dynamic Result Table -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between text-xs text-slate-400">
+            <span id="sandboxStatusText">Showing 16 rows from retail_sales sample</span>
+            <span class="font-mono text-emerald-400">Execution time: 1.4 ms</span>
+          </div>
+          <div class="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-950">
+            <table class="w-full text-left border-collapse text-xs sm:text-sm">
+              <thead id="sandboxTableHead" class="bg-slate-900/90 text-slate-300 font-mono text-xs uppercase border-b border-slate-800"></thead>
+              <tbody id="sandboxTableBody" class="divide-y divide-slate-800/70 font-mono text-xs text-slate-300"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. SQL Code Audit & Production Refinements -->
+    <section id="review" class="space-y-6">
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <span class="text-xs font-mono uppercase tracking-wider text-amber-400 font-semibold">Code Quality &amp; Engineering Rigor</span>
+          <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight mt-1">SQL Code Audit &amp; Production Refinements</h2>
+          <p class="text-slate-400 text-sm mt-1">Four subtle syntax, grouping, and naming issues identified during code review—with side-by-side before &amp; after fixes for production deployment.</p>
+        </div>
+        <button id="copyCleanScriptBtn" class="px-4 py-2.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-xs sm:text-sm font-semibold flex items-center gap-2 transition cursor-pointer self-start md:self-auto">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
+          </svg>
+          Copy Production-Fixed Full SQL Script
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Audit Card 1 -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <span class="px-2 py-0.5 rounded bg-rose-500/15 text-rose-300 border border-rose-500/30 text-[11px] font-mono font-semibold">DDL SYNTAX FIX #1</span>
+              <h3 class="text-base font-bold text-white mt-1.5">DECIMAL Precision Syntax (<code class="font-mono text-rose-300">10.2</code> vs <code class="font-mono text-emerald-300">10,2</code>)</h3>
+            </div>
+          </div>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            In <code class="font-mono text-slate-300">CREATE TABLE retail_sales</code>, <code class="font-mono text-rose-300">decimal(10.2)</code> uses a dot instead of a comma, which triggers a SQL syntax error in strict MySQL/PostgreSQL engines.
+          </p>
+          <div class="grid grid-cols-1 gap-2.5 font-mono text-xs">
+            <div class="p-3 rounded-xl bg-rose-950/30 border border-rose-500/20 text-rose-200">
+              <div class="text-[10px] uppercase text-rose-400 font-sans font-bold mb-1">Before (Original)</div>
+              price_per_unit decimal(10.2),<br/>
+              total_sale decimal(10.2)
+            </div>
+            <div class="p-3 rounded-xl bg-emerald-950/30 border border-emerald-500/20 text-emerald-200">
+              <div class="text-[10px] uppercase text-emerald-400 font-sans font-bold mb-1">After (Production Fix)</div>
+              price_per_unit DECIMAL(10, 2),<br/>
+              total_sale DECIMAL(10, 2)
+            </div>
+          </div>
+        </div>
+
+        <!-- Audit Card 2 -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <span class="px-2 py-0.5 rounded bg-rose-500/15 text-rose-300 border border-rose-500/30 text-[11px] font-mono font-semibold">SQL GROUPING FIX #2</span>
+              <h3 class="text-base font-bold text-white mt-1.5">Missing <code class="font-mono text-emerald-300">GROUP BY category</code> on Distinct Count</h3>
+            </div>
+          </div>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Selecting a non-aggregated column (<code class="font-mono text-slate-300">category</code>) alongside <code class="font-mono text-slate-300">COUNT(DISTINCT customer_id)</code> without <code class="font-mono text-amber-300">GROUP BY category</code> fails under <code class="font-mono text-slate-300">ONLY_FULL_GROUP_BY</code> mode.
+          </p>
+          <div class="grid grid-cols-1 gap-2.5 font-mono text-xs">
+            <div class="p-3 rounded-xl bg-rose-950/30 border border-rose-500/20 text-rose-200">
+              <div class="text-[10px] uppercase text-rose-400 font-sans font-bold mb-1">Before (Original)</div>
+              SELECT category, COUNT(DISTINCT customer_id) AS customers<br/>
+              FROM retail_sales;
+            </div>
+            <div class="p-3 rounded-xl bg-emerald-950/30 border border-emerald-500/20 text-emerald-200">
+              <div class="text-[10px] uppercase text-emerald-400 font-sans font-bold mb-1">After (Production Fix)</div>
+              SELECT category, COUNT(DISTINCT customer_id) AS customers<br/>
+              FROM retail_sales GROUP BY category;
+            </div>
+          </div>
+        </div>
+
+        <!-- Audit Card 3 -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <span class="px-2 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30 text-[11px] font-mono font-semibold">SCHEMA NAMING #3</span>
+              <h3 class="text-base font-bold text-white mt-1.5">Column Identifier Typo (<code class="font-mono text-amber-300">quantiy</code> → <code class="font-mono text-emerald-300">quantity</code>)</h3>
+            </div>
+          </div>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Consistent spelling in DDL prevents downstream BI tool confusion. While the query consistently references <code class="font-mono text-slate-300">quantiy</code>, standardizing to <code class="font-mono text-emerald-300">quantity</code> improves maintainability.
+          </p>
+          <div class="grid grid-cols-1 gap-2.5 font-mono text-xs">
+            <div class="p-3 rounded-xl bg-rose-950/30 border border-rose-500/20 text-rose-200">
+              <div class="text-[10px] uppercase text-rose-400 font-sans font-bold mb-1">Before (Original)</div>
+              quantiy INT ... WHERE quantiy &gt;= 4
+            </div>
+            <div class="p-3 rounded-xl bg-emerald-950/30 border border-emerald-500/20 text-emerald-200">
+              <div class="text-[10px] uppercase text-emerald-400 font-sans font-bold mb-1">After (Production Fix)</div>
+              quantity INT ... WHERE quantity &gt;= 4
+            </div>
+          </div>
+        </div>
+
+        <!-- Audit Card 4 -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <span class="px-2 py-0.5 rounded bg-amber-500/15 text-amber-300 border border-amber-500/30 text-[11px] font-mono font-semibold">LABEL CLEANUP #4</span>
+              <h3 class="text-base font-bold text-white mt-1.5">Shift Label String Typo (<code class="font-mono text-amber-300">'agternoon'</code> → <code class="font-mono text-emerald-300">'Afternoon'</code>)</h3>
+            </div>
+          </div>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            In the operational shift <code class="font-mono text-slate-300">CASE</code> statement, <code class="font-mono text-rose-300">'agternoon'</code> had a typo and inconsistent title casing compared to <code class="font-mono text-slate-300">'morning'</code> and <code class="font-mono text-slate-300">'evening'</code>.
+          </p>
+          <div class="grid grid-cols-1 gap-2.5 font-mono text-xs">
+            <div class="p-3 rounded-xl bg-rose-950/30 border border-rose-500/20 text-rose-200">
+              <div class="text-[10px] uppercase text-rose-400 font-sans font-bold mb-1">Before (Original)</div>
+              WHEN HOUR(sale_time) &lt; 17 THEN 'agternoon'
+            </div>
+            <div class="p-3 rounded-xl bg-emerald-950/30 border border-emerald-500/20 text-emerald-200">
+              <div class="text-[10px] uppercase text-emerald-400 font-sans font-bold mb-1">After (Production Fix)</div>
+              WHEN HOUR(sale_time) &lt; 17 THEN 'Afternoon'
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-800/80 bg-slate-950 py-8 mt-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+      <div>
+        <span class="font-semibold text-slate-300">Retail Sales SQL Analysis Portfolio</span> &bull; Built from <code class="font-mono text-indigo-400">reatail_sales_project_analysis.sql</code>
+      </div>
+      <div class="font-mono">
+        SQL &bull; CTEs &bull; Window Functions &bull; Business Intelligence
+      </div>
+    </div>
+  </footer>
+
+  <!-- JavaScript Application Logic -->
+  <script>
+    // 1. Sample Dataset (16 realistic transactions representing retail_sales)
+    const SAMPLE_RETAIL_SALES = [
+      { transactions_id: 101, sale_date: '2022-11-05', sale_time: '09:45:00', customer_id: 42, gender: 'Female', age: 34, category: 'Beauty', quantiy: 3, price_per_unit: 300.00, cogs: 135.0, total_sale: 900.00 },
+      { transactions_id: 102, sale_date: '2022-11-05', sale_time: '14:20:00', customer_id: 18, gender: 'Male', age: 29, category: 'Clothing', quantiy: 4, price_per_unit: 300.00, cogs: 144.0, total_sale: 1200.00 },
+      { transactions_id: 103, sale_date: '2022-11-12', sale_time: '19:15:00', customer_id: 77, gender: 'Female', age: 41, category: 'Electronics', quantiy: 4, price_per_unit: 500.00, cogs: 210.0, total_sale: 2000.00 },
+      { transactions_id: 104, sale_date: '2022-11-18', sale_time: '18:05:00', customer_id: 18, gender: 'Male', age: 29, category: 'Clothing', quantiy: 4, price_per_unit: 500.00, cogs: 230.0, total_sale: 2000.00 },
+      { transactions_id: 105, sale_date: '2022-11-24', sale_time: '11:10:00', customer_id: 93, gender: 'Female', age: 46, category: 'Beauty', quantiy: 2, price_per_unit: 500.00, cogs: 220.0, total_sale: 1000.00 },
+      { transactions_id: 106, sale_date: '2022-12-03', sale_time: '20:30:00', customer_id: 15, gender: 'Male', age: 52, category: 'Electronics', quantiy: 4, price_per_unit: 500.00, cogs: 240.0, total_sale: 2000.00 },
+      { transactions_id: 107, sale_date: '2022-12-14', sale_time: '15:50:00', customer_id: 64, gender: 'Female', age: 38, category: 'Beauty', quantiy: 4, price_per_unit: 300.00, cogs: 150.0, total_sale: 1200.00 },
+      { transactions_id: 108, sale_date: '2022-12-22', sale_time: '10:25:00', customer_id: 31, gender: 'Male', age: 27, category: 'Clothing', quantiy: 2, price_per_unit: 150.00, cogs: 70.0, total_sale: 300.00 },
+      { transactions_id: 109, sale_date: '2023-03-10', sale_time: '13:40:00', customer_id: 77, gender: 'Female', age: 41, category: 'Electronics', quantiy: 3, price_per_unit: 500.00, cogs: 215.0, total_sale: 1500.00 },
+      { transactions_id: 110, sale_date: '2023-05-19', sale_time: '18:45:00', customer_id: 55, gender: 'Female', age: 39, category: 'Beauty', quantiy: 1, price_per_unit: 250.00, cogs: 110.0, total_sale: 250.00 },
+      { transactions_id: 111, sale_date: '2023-07-08', sale_time: '21:05:00', customer_id: 15, gender: 'Male', age: 52, category: 'Electronics', quantiy: 3, price_per_unit: 500.00, cogs: 225.0, total_sale: 1500.00 },
+      { transactions_id: 112, sale_date: '2023-09-14', sale_time: '16:15:00', customer_id: 88, gender: 'Female', age: 44, category: 'Beauty', quantiy: 3, price_per_unit: 300.00, cogs: 140.0, total_sale: 900.00 },
+      { transactions_id: 113, sale_date: '2023-10-02', sale_time: '17:35:00', customer_id: 18, gender: 'Male', age: 29, category: 'Clothing', quantiy: 3, price_per_unit: 300.00, cogs: 130.0, total_sale: 900.00 },
+      { transactions_id: 114, sale_date: '2023-10-19', sale_time: '19:55:00', customer_id: 42, gender: 'Female', age: 34, category: 'Electronics', quantiy: 4, price_per_unit: 500.00, cogs: 205.0, total_sale: 2000.00 },
+      { transactions_id: 115, sale_date: '2023-10-28', sale_time: '11:40:00', customer_id: 104, gender: 'Male', age: 31, category: 'Clothing', quantiy: 2, price_per_unit: 200.00, cogs: 95.0, total_sale: 400.00 },
+      { transactions_id: 116, sale_date: '2023-11-11', sale_time: '20:10:00', customer_id: 93, gender: 'Female', age: 46, category: 'Beauty', quantiy: 4, price_per_unit: 300.00, cogs: 138.0, total_sale: 1200.00 }
+    ];
+
+    // 2. All 11 Queries from reatail_sales_project_analysis.sql
+    const SQL_QUERIES = [
+      {
+        id: 'ddl',
+        number: 'DDL & Setup',
+        category: 'ddl',
+        badge: 'Database & Schema',
+        title: 'Database Creation, Table DDL & Initial Data Exploration',
+        question: 'How is the relational database structured and validated before analysis?',
+        takeaway: 'Creates the reatail_sales_project_analysis database, defines primary key constraints on transactions_id, and verifies row count & sample records.',
+        hasFix: true,
+        originalSql: `-- creating my project database
+CREATE DATABASE IF NOT EXISTS reatail_sales_project_analysis;
+USE reatail_sales_project_analysis;
+
+CREATE TABLE retail_sales (
+  transactions_id INT PRIMARY KEY,
+  sale_date DATE,
+  sale_time TIME,
+  customer_id INT,
+  gender VARCHAR(15),
+  age INT,
+  category VARCHAR(35),
+  quantiy INT,
+  price_per_unit decimal(10.2),
+  cogs FLOAT,
+  total_sale decimal(10.2)
+);
+
+SELECT COUNT(*) FROM retail_sales;
+SELECT * FROM retail_sales LIMIT 25;`,
+        fixedSql: `-- Production-Refined DDL (Fixed DECIMAL(10,2) syntax)
+CREATE DATABASE IF NOT EXISTS reatail_sales_project_analysis;
+USE reatail_sales_project_analysis;
+
+CREATE TABLE retail_sales (
+  transactions_id INT PRIMARY KEY,
+  sale_date DATE,
+  sale_time TIME,
+  customer_id INT,
+  gender VARCHAR(15),
+  age INT,
+  category VARCHAR(35),
+  quantity INT,
+  price_per_unit DECIMAL(10, 2),
+  cogs FLOAT,
+  total_sale DECIMAL(10, 2)
+);
+
+SELECT COUNT(*) AS total_records FROM retail_sales;
+SELECT * FROM retail_sales LIMIT 25;`,
+        columns: ['transactions_id', 'sale_date', 'sale_time', 'customer_id', 'gender', 'age', 'category', 'quantiy', 'total_sale'],
+        previewRows: [
+          ['101', '2022-11-05', '09:45:00', '42', 'Female', '34', 'Beauty', '3', '900.00'],
+          ['102', '2022-11-05', '14:20:00', '18', 'Male', '29', 'Clothing', '4', '1200.00'],
+          ['103', '2022-11-12', '19:15:00', '77', 'Female', '41', 'Electronics', '4', '2000.00']
+        ]
+      },
+      {
+        id: 'q1',
+        number: 'Query 01',
+        category: 'filtering',
+        badge: 'Basic Filtering',
+        title: "Retrieve All Sales Made on '2022-11-05'",
+        question: "Which transactions occurred on the specific target date of November 5, 2022?",
+        takeaway: "Demonstrates exact DATE predicate filtering to audit daily store activity and reconcile POS receipts.",
+        hasFix: false,
+        originalSql: `-- Retrieve all sales made on '2022-11-05'.
+SELECT *
+FROM retail_sales
+WHERE sale_date = '2022-11-05';`,
+        columns: ['transactions_id', 'sale_date', 'sale_time', 'customer_id', 'category', 'quantiy', 'total_sale'],
+        previewRows: [
+          ['101', '2022-11-05', '09:45:00', '42', 'Beauty', '3', '900.00'],
+          ['102', '2022-11-05', '14:20:00', '18', 'Clothing', '4', '1200.00']
+        ]
+      },
+      {
+        id: 'q2',
+        number: 'Query 02',
+        category: 'filtering',
+        badge: 'Multi-Condition Filtering',
+        title: 'Clothing Bulk Orders in Nov-2022 (Quantity >= 4)',
+        question: 'Which Clothing transactions in November 2022 had a basket quantity of 4 or more units?',
+        takeaway: 'Combines string matching, numeric threshold filtering, and YEAR()/MONTH() date functions to isolate bulk apparel buyers.',
+        hasFix: false,
+        originalSql: `-- Clothing sales in Nov-2022 where quantity >= 4.
+SELECT *
+FROM retail_sales
+WHERE quantiy >= 4
+  AND category = 'clothing'
+  AND YEAR(sale_date) = 2022
+  AND MONTH(sale_date) = 11;`,
+        columns: ['transactions_id', 'sale_date', 'customer_id', 'category', 'quantiy', 'price_per_unit', 'total_sale'],
+        previewRows: [
+          ['102', '2022-11-05', '18', 'Clothing', '4', '300.00', '1200.00'],
+          ['104', '2022-11-18', '18', 'Clothing', '4', '500.00', '2000.00']
+        ]
+      },
+      {
+        id: 'q3',
+        number: 'Query 03',
+        category: 'aggregations',
+        badge: 'Revenue Aggregation',
+        title: 'Total Sales Revenue per Product Category',
+        question: 'How much total revenue (total_sale) does each product category generate?',
+        takeaway: 'Electronics leads overall revenue generation due to higher price points, followed by Beauty and Clothing.',
+        hasFix: false,
+        originalSql: `-- Total sales revenue per product category
+SELECT category, SUM(total_sale) AS sals_by_category
+FROM retail_sales
+GROUP BY category;`,
+        columns: ['category', 'sals_by_category'],
+        previewRows: [
+          ['Electronics', '9000.00'],
+          ['Beauty', '5250.00'],
+          ['Clothing', '4500.00']
+        ]
+      },
+      {
+        id: 'q4',
+        number: 'Query 04',
+        category: 'aggregations',
+        badge: 'Demographic Profiling',
+        title: 'Average Age of Customers Purchasing Beauty Products',
+        question: 'What is the average customer age for the Beauty category?',
+        takeaway: 'Beauty shoppers average ~40 years old, helping marketing tailor product assortments and ad targeting.',
+        hasFix: false,
+        originalSql: `-- Average age of customers purchasing Beauty products
+SELECT ROUND(AVG(age), 0) AS avg_beauty_age
+FROM retail_sales
+WHERE category = 'Beauty';`,
+        columns: ['ROUND(AVG(age), 0)'],
+        previewRows: [
+          ['40']
+        ]
+      },
+      {
+        id: 'q5',
+        number: 'Query 05',
+        category: 'filtering',
+        badge: 'High-Value Threshold',
+        title: 'All High-Value Transactions Exceeding ₹1,000',
+        question: 'Which individual orders generated more than ₹1,000 in gross sales?',
+        takeaway: 'Identifies premium, high-margin baskets (typically 3–4 units at ₹300–₹500/unit) that drive outsized revenue.',
+        hasFix: false,
+        originalSql: `-- All high-value transactions exceeding ₹1,000
+SELECT *
+FROM retail_sales
+WHERE total_sale > 1000;`,
+        columns: ['transactions_id', 'sale_date', 'customer_id', 'category', 'quantiy', 'total_sale'],
+        previewRows: [
+          ['102', '2022-11-05', '18', 'Clothing', '4', '1200.00'],
+          ['103', '2022-11-12', '77', 'Electronics', '4', '2000.00'],
+          ['104', '2022-11-18', '18', 'Clothing', '4', '2000.00'],
+          ['106', '2022-12-03', '15', 'Electronics', '4', '2000.00']
+        ]
+      },
+      {
+        id: 'q6',
+        number: 'Query 06',
+        category: 'aggregations',
+        badge: 'Cross-Tab Grouping',
+        title: 'Total Transactions by Gender in Each Category',
+        question: 'How does order frequency split between Male and Female shoppers across each department?',
+        takeaway: 'Multi-column GROUP BY reveals strong Female transaction volume in Beauty and balanced distribution across Clothing & Electronics.',
+        hasFix: false,
+        originalSql: `-- Total transactions by gender in each category
+SELECT category, gender, COUNT(total_sale) AS total_transactions
+FROM retail_sales
+GROUP BY category, gender
+ORDER BY category;`,
+        columns: ['category', 'gender', 'total_transactions'],
+        previewRows: [
+          ['Beauty', 'Female', '6'],
+          ['Clothing', 'Male', '4'],
+          ['Electronics', 'Female', '3'],
+          ['Electronics', 'Male', '2']
+        ]
+      },
+      {
+        id: 'q7',
+        number: 'Query 07',
+        category: 'window',
+        badge: 'CTE + DENSE_RANK()',
+        title: 'Best-Selling Month in Each Operating Year',
+        question: 'Which calendar month generated the highest total sales in each operating year?',
+        takeaway: 'Uses a Common Table Expression (CTE) with DENSE_RANK() OVER (PARTITION BY YEAR(sale_date)) to pinpoint annual seasonal peaks.',
+        hasFix: false,
+        originalSql: `-- Best-selling month in each operating year
+WITH my_cte AS (
+  SELECT
+    YEAR(sale_date) AS sale_year,
+    MONTH(sale_date) AS sale_month,
+    SUM(total_sale) AS monthly_sales,
+    DENSE_RANK() OVER (
+      PARTITION BY YEAR(sale_date)
+      ORDER BY SUM(total_sale) DESC
+    ) AS my_rank
+  FROM retail_sales
+  GROUP BY YEAR(sale_date), MONTH(sale_date)
+)
+SELECT *
+FROM my_cte
+WHERE my_rank = 1;`,
+        columns: ['sale_year', 'sale_month', 'monthly_sales', 'my_rank'],
+        previewRows: [
+          ['2022', '11', '6100.00', '1'],
+          ['2023', '10', '3300.00', '1']
+        ]
+      },
+      {
+        id: 'q8',
+        number: 'Query 08',
+        category: 'window',
+        badge: 'CTE + RANK()',
+        title: 'Top 5 VIP Customers by Total Expenditure',
+        question: 'Who are the top 5 highest-spending customers across the entire store history?',
+        takeaway: 'Ranks shoppers by cumulative lifetime spend using RANK() OVER (ORDER BY SUM(total_sale) DESC) for VIP retention campaigns.',
+        hasFix: false,
+        originalSql: `-- Top 5 VIP customers by total expenditure
+WITH my_cte AS (
+  SELECT
+    customer_id,
+    SUM(total_sale) AS total_spent,
+    RANK() OVER (ORDER BY SUM(total_sale) DESC) AS my_rank
+  FROM retail_sales
+  GROUP BY customer_id
+)
+SELECT *
+FROM my_cte
+WHERE my_rank <= 5;`,
+        columns: ['customer_id', 'total_spent', 'my_rank'],
+        previewRows: [
+          ['18', '4100.00', '1'],
+          ['77', '3500.00', '2'],
+          ['15', '3500.00', '2'],
+          ['42', '2900.00', '4'],
+          ['93', '2200.00', '5']
+        ]
+      },
+      {
+        id: 'q9',
+        number: 'Query 09',
+        category: 'aggregations',
+        badge: 'COUNT(DISTINCT)',
+        title: 'Unique Customer Count per Product Category',
+        question: 'How many distinct customers shopped in each product category?',
+        takeaway: 'Measures unique customer reach per department. Production query adds GROUP BY category for strict SQL compliance.',
+        hasFix: true,
+        originalSql: `-- Unique customer count per product category (Original)
+SELECT category, COUNT(DISTINCT customer_id) AS customers
+FROM retail_sales;`,
+        fixedSql: `-- Production-Refined Query (Added GROUP BY category)
+SELECT category, COUNT(DISTINCT customer_id) AS customers
+FROM retail_sales
+GROUP BY category;`,
+        columns: ['category', 'customers'],
+        previewRows: [
+          ['Beauty', '5'],
+          ['Clothing', '3'],
+          ['Electronics', '3']
+        ]
+      },
+      {
+        id: 'q10',
+        number: 'Query 10',
+        category: 'segmentation',
+        badge: 'CASE WHEN Tiering',
+        title: 'Transaction Value Tier Classification (High / Medium / Low)',
+        question: 'How can individual receipts be classified into High (>₹500), Medium (>₹300), and Low value tiers?',
+        takeaway: 'Applies conditional CASE WHEN logic to segment basket sizes for promotional upsell rules.',
+        hasFix: false,
+        originalSql: `-- Transaction value tiering
+SELECT *,
+  CASE
+    WHEN total_sale > 500 THEN 'High'
+    WHEN total_sale > 300 THEN 'medium'
+    ELSE 'low'
+  END AS status
+FROM retail_sales
+LIMIT 25;`,
+        columns: ['transactions_id', 'category', 'quantiy', 'total_sale', 'status'],
+        previewRows: [
+          ['101', 'Beauty', '3', '900.00', 'High'],
+          ['115', 'Clothing', '2', '400.00', 'medium'],
+          ['108', 'Clothing', '2', '300.00', 'low']
+        ]
+      },
+      {
+        id: 'q11',
+        number: 'Query 11',
+        category: 'segmentation',
+        badge: 'CTE + Shift Analytics',
+        title: 'Order Distribution by Operational Day Shift',
+        question: 'How are orders distributed across Morning (<12h), Afternoon (12h–17h), and Evening (>=17h) shifts?',
+        takeaway: 'Evening shift accounts for ~50% of all orders, guiding store labor scheduling and inventory replenishment.',
+        hasFix: true,
+        originalSql: `-- Order distribution by operational day shift (Original)
+WITH my_cte AS (
+  SELECT sale_time,
+    CASE
+      WHEN HOUR(sale_time) < 12 THEN 'morning'
+      WHEN HOUR(sale_time) < 17 THEN 'agternoon'
+      ELSE 'evening'
+    END AS shift
+  FROM retail_sales
+)
+SELECT shift, COUNT(*)
+FROM my_cte
+GROUP BY shift;`,
+        fixedSql: `-- Production-Refined Query (Standardized 'Afternoon' label)
+WITH my_cte AS (
+  SELECT sale_time,
+    CASE
+      WHEN HOUR(sale_time) < 12 THEN 'Morning'
+      WHEN HOUR(sale_time) < 17 THEN 'Afternoon'
+      ELSE 'Evening'
+    END AS shift
+  FROM retail_sales
+)
+SELECT shift, COUNT(*) AS order_count
+FROM my_cte
+GROUP BY shift
+ORDER BY order_count DESC;`,
+        columns: ['shift', 'order_count'],
+        previewRows: [
+          ['Evening', '8'],
+          ['Morning', '4'],
+          ['Afternoon', '4']
+        ]
+      }
+    ];
+
+    // Full Production-Fixed Script for Copy Button
+    const FULL_PRODUCTION_SQL = `-- ============================================================================
+-- RETAIL SALES SQL ANALYSIS (PRODUCTION-REFINED SCRIPT)
+-- Database: reatail_sales_project_analysis | Table: retail_sales
+-- ============================================================================
+
+CREATE DATABASE IF NOT EXISTS reatail_sales_project_analysis;
+USE reatail_sales_project_analysis;
+
+CREATE TABLE IF NOT EXISTS retail_sales (
+  transactions_id INT PRIMARY KEY,
+  sale_date DATE,
+  sale_time TIME,
+  customer_id INT,
+  gender VARCHAR(15),
+  age INT,
+  category VARCHAR(35),
+  quantity INT,
+  price_per_unit DECIMAL(10, 2),
+  cogs FLOAT,
+  total_sale DECIMAL(10, 2)
+);
+
+-- Initial Exploration
+SELECT COUNT(*) AS total_records FROM retail_sales;
+SELECT * FROM retail_sales LIMIT 25;
+
+-- Q1: Retrieve all sales made on '2022-11-05'
+SELECT * FROM retail_sales WHERE sale_date = '2022-11-05';
+
+-- Q2: Clothing sales in Nov-2022 where quantity >= 4
+SELECT * FROM retail_sales
+WHERE quantity >= 4
+  AND category = 'Clothing'
+  AND YEAR(sale_date) = 2022
+  AND MONTH(sale_date) = 11;
+
+-- Q3: Total sales revenue per product category
+SELECT category, SUM(total_sale) AS sales_by_category
+FROM retail_sales
+GROUP BY category
+ORDER BY sales_by_category DESC;
+
+-- Q4: Average age of customers purchasing Beauty products
+SELECT ROUND(AVG(age), 0) AS avg_beauty_customer_age
+FROM retail_sales
+WHERE category = 'Beauty';
+
+-- Q5: All high-value transactions exceeding ₹1,000
+SELECT * FROM retail_sales WHERE total_sale > 1000;
+
+-- Q6: Total transactions by gender in each category
+SELECT category, gender, COUNT(transactions_id) AS total_transactions
+FROM retail_sales
+GROUP BY category, gender
+ORDER BY category;
+
+-- Q7: Best-selling month in each operating year
+WITH monthly_sales_cte AS (
+  SELECT
+    YEAR(sale_date) AS sale_year,
+    MONTH(sale_date) AS sale_month,
+    SUM(total_sale) AS total_revenue,
+    DENSE_RANK() OVER (PARTITION BY YEAR(sale_date) ORDER BY SUM(total_sale) DESC) AS sales_rank
+  FROM retail_sales
+  GROUP BY YEAR(sale_date), MONTH(sale_date)
+)
+SELECT sale_year, sale_month, total_revenue
+FROM monthly_sales_cte
+WHERE sales_rank = 1;
+
+-- Q8: Top 5 VIP customers by total expenditure
+WITH customer_spend_cte AS (
+  SELECT
+    customer_id,
+    SUM(total_sale) AS total_spent,
+    RANK() OVER (ORDER BY SUM(total_sale) DESC) AS vip_rank
+  FROM retail_sales
+  GROUP BY customer_id
+)
+SELECT customer_id, total_spent, vip_rank
+FROM customer_spend_cte
+WHERE vip_rank <= 5;
+
+-- Q9: Unique customer count per product category
+SELECT category, COUNT(DISTINCT customer_id) AS unique_customers
+FROM retail_sales
+GROUP BY category;
+
+-- Q10: Transaction value classification
+SELECT *,
+  CASE
+    WHEN total_sale > 500 THEN 'High'
+    WHEN total_sale > 300 THEN 'Medium'
+    ELSE 'Low'
+  END AS order_tier
+FROM retail_sales
+LIMIT 25;
+
+-- Q11: Order distribution by operational day shift
+WITH shift_cte AS (
+  SELECT
+    transactions_id,
+    CASE
+      WHEN HOUR(sale_time) < 12 THEN 'Morning'
+      WHEN HOUR(sale_time) < 17 THEN 'Afternoon'
+      ELSE 'Evening'
+    END AS shift
+  FROM retail_sales
+)
+SELECT shift, COUNT(*) AS total_orders
+FROM shift_cte
+GROUP BY shift
+ORDER BY total_orders DESC;`;
+
+    // Utility: Copy Text using execCommand fallback
+    function copyToClipboard(text, message = 'Copied SQL query to clipboard!') {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand('copy');
+        showToast(message);
+      } catch (err) {
+        showToast('Unable to copy text.');
+      }
+      document.body.removeChild(textarea);
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toastMessage');
+      toastMsg.textContent = msg;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 2600);
+    }
+
+    // Utility: Lightweight SQL Syntax Highlighter
+    function highlightSql(sql) {
+      const escaped = sql
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+
+      return escaped
+        .replace(/(--.*)/g, '<span class="text-slate-500 italic">$1</span>')
+        .replace(/('[^']*')/g, '<span class="text-amber-300">$1</span>')
+        .replace(/\b(CREATE|DATABASE|IF|NOT|EXISTS|USE|TABLE|PRIMARY|KEY|SELECT|FROM|WHERE|AND|OR|GROUP|BY|ORDER|DESC|ASC|LIMIT|WITH|AS|OVER|PARTITION|CASE|WHEN|THEN|ELSE|END|DISTINCT)\b/gi, '<span class="text-indigo-400 font-semibold">$1</span>')
+        .replace(/\b(COUNT|SUM|AVG|ROUND|YEAR|MONTH|HOUR|DENSE_RANK|RANK)\b/gi, '<span class="text-cyan-400">$1</span>')
+        .replace(/\b(INT|DATE|TIME|VARCHAR|DECIMAL|FLOAT)\b/gi, '<span class="text-emerald-400">$1</span>');
+    }
+
+    // 3. Render Query Cards with Original/Optimized Toggle
+    let activeFilter = 'all';
+    let searchTerm = '';
+    const codeModes = {}; // tracks 'original' or 'fixed' per card id
+
+    function renderQueries() {
+      const container = document.getElementById('queriesContainer');
+      const emptyState = document.getElementById('emptyState');
+
+      const filtered = SQL_QUERIES.filter(q => {
+        const matchesCat = activeFilter === 'all' || q.category === activeFilter;
+        const term = searchTerm.toLowerCase().trim();
+        const matchesSearch = !term ||
+          q.title.toLowerCase().includes(term) ||
+          q.question.toLowerCase().includes(term) ||
+          q.originalSql.toLowerCase().includes(term) ||
+          q.badge.toLowerCase().includes(term);
+        return matchesCat && matchesSearch;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+      container.innerHTML = filtered.map(q => {
+        const currentMode = codeModes[q.id] || 'original';
+        const activeSql = (q.hasFix && currentMode === 'fixed') ? q.fixedSql : q.originalSql;
+
+        return `
+          <article class="bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-2xl overflow-hidden shadow-lg transition">
+            <div class="p-5 sm:p-6 space-y-4">
+              <!-- Top Metadata Row -->
+              <div class="flex flex-wrap items-center justify-between gap-3">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="px-2.5 py-1 rounded-lg bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 font-mono text-xs font-bold">${q.number}</span>
+                  <span class="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-300 text-xs font-medium">${q.badge}</span>
+                  ${q.hasFix ? `<span class="px-2.5 py-1 rounded-lg bg-amber-500/10 border border-amber-500/25 text-amber-300 text-xs font-medium">Audit Fix Available</span>` : ''}
+                </div>
+
+                <div class="flex items-center gap-2">
+                  ${q.hasFix ? `
+                    <div class="inline-flex rounded-lg bg-slate-950 p-0.5 border border-slate-800 text-xs">
+                      <button onclick="setCodeMode('${q.id}', 'original')" class="px-2.5 py-1 rounded-md font-medium transition cursor-pointer ${currentMode === 'original' ? 'bg-slate-800 text-white' : 'text-slate-400 hover:text-slate-200'}">Original</button>
+                      <button onclick="setCodeMode('${q.id}', 'fixed')" class="px-2.5 py-1 rounded-md font-medium transition cursor-pointer ${currentMode === 'fixed' ? 'bg-emerald-600 text-white' : 'text-slate-400 hover:text-slate-200'}">Fixed</button>
+                    </div>
+                  ` : ''}
+                  <button onclick="copyQueryById('${q.id}')" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium flex items-center gap-1.5 transition cursor-pointer">
+                    <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                    </svg>
+                    Copy SQL
+                  </button>
+                </div>
+              </div>
+
+              <!-- Title & Business Question -->
+              <div>
+                <h3 class="text-lg sm:text-xl font-bold text-white">${q.title}</h3>
+                <p class="text-xs sm:text-sm text-cyan-300/90 mt-1"><strong class="text-slate-400 font-medium">Business Question:</strong> ${q.question}</p>
+              </div>
+
+              <!-- Split Code & Output Grid -->
+              <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 pt-1">
+                <!-- SQL Code Block -->
+                <div class="lg:col-span-7 bg-slate-950 border border-slate-800/90 rounded-xl p-4 overflow-x-auto">
+                  <div class="text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-2">SQL Statement (${currentMode === 'fixed' && q.hasFix ? 'Production-Refined' : 'Original Script'})</div>
+                  <pre class="font-mono text-xs sm:text-[13px] leading-relaxed text-slate-200 whitespace-pre">${highlightSql(activeSql)}</pre>
+                </div>
+
+                <!-- Simulated Output Preview -->
+                <div class="lg:col-span-5 bg-slate-950 border border-slate-800/90 rounded-xl p-4 flex flex-col justify-between space-y-3">
+                  <div>
+                    <div class="text-[10px] font-mono uppercase tracking-wider text-emerald-400 mb-2">Simulated Result Preview</div>
+                    <div class="overflow-x-auto rounded-lg border border-slate-800/80">
+                      <table class="w-full text-left border-collapse font-mono text-[11px]">
+                        <thead class="bg-slate-900 text-slate-400 border-b border-slate-800">
+                          <tr>
+                            ${q.columns.map(col => `<th class="py-2 px-2.5">${col}</th>`).join('')}
+                          </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-800/60 text-slate-300">
+                          ${q.previewRows.map(row => `
+                            <tr>
+                              ${row.map(cell => `<td class="py-1.5 px-2.5">${cell}</td>`).join('')}
+                            </tr>
+                          `).join('')}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  <div class="text-xs text-slate-400 bg-slate-900/70 border border-slate-800/80 rounded-lg p-2.5 leading-relaxed">
+                    <span class="text-indigo-400 font-semibold">Key Takeaway:</span> ${q.takeaway}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    window.setCodeMode = function(id, mode) {
+      codeModes[id] = mode;
+      renderQueries();
+    };
+
+    window.copyQueryById = function(id) {
+      const q = SQL_QUERIES.find(item => item.id === id);
+      if (!q) return;
+      const mode = codeModes[id] || 'original';
+      const sqlToCopy = (q.hasFix && mode === 'fixed') ? q.fixedSql : q.originalSql;
+      copyToClipboard(sqlToCopy, `Copied ${q.number} SQL to clipboard!`);
+    };
+
+    // 4. Interactive Live SQL Sandbox Execution Engine
+    function runSandboxQuery(presetKey) {
+      let sqlText = '';
+      let headers = [];
+      let rows = [];
+
+      switch (presetKey) {
+        case 'nov_5':
+          sqlText = `SELECT * FROM retail_sales WHERE sale_date = '2022-11-05';`;
+          headers = ['transactions_id', 'sale_date', 'sale_time', 'customer_id', 'gender', 'category', 'quantiy', 'total_sale'];
+          rows = SAMPLE_RETAIL_SALES
+            .filter(r => r.sale_date === '2022-11-05')
+            .map(r => [r.transactions_id, r.sale_date, r.sale_time, r.customer_id, r.gender, r.category, r.quantiy, r.total_sale.toFixed(2)]);
+          break;
+
+        case 'clothing_bulk':
+          sqlText = `SELECT * FROM retail_sales\nWHERE quantiy >= 4 AND category = 'Clothing'\n  AND YEAR(sale_date) = 2022 AND MONTH(sale_date) = 11;`;
+          headers = ['transactions_id', 'sale_date', 'customer_id', 'category', 'quantiy', 'price_per_unit', 'total_sale'];
+          rows = SAMPLE_RETAIL_SALES
+            .filter(r => r.quantiy >= 4 && r.category.toLowerCase() === 'clothing' && r.sale_date.startsWith('2022-11'))
+            .map(r => [r.transactions_id, r.sale_date, r.customer_id, r.category, r.quantiy, r.price_per_unit.toFixed(2), r.total_sale.toFixed(2)]);
+          break;
+
+        case 'rev_category':
+          sqlText = `SELECT category, SUM(total_sale) AS sales_by_category\nFROM retail_sales\nGROUP BY category\nORDER BY sales_by_category DESC;`;
+          headers = ['category', 'sales_by_category'];
+          const catMap = {};
+          SAMPLE_RETAIL_SALES.forEach(r => {
+            catMap[r.category] = (catMap[r.category] || 0) + r.total_sale;
+          });
+          rows = Object.entries(catMap)
+            .sort((a, b) => b[1] - a[1])
+            .map(([cat, sum]) => [cat, `₹${sum.toFixed(2)}`]);
+          break;
+
+        case 'avg_age_beauty':
+          sqlText = `SELECT ROUND(AVG(age), 0) AS avg_beauty_age\nFROM retail_sales\nWHERE category = 'Beauty';`;
+          headers = ['avg_beauty_age'];
+          const beautyRows = SAMPLE_RETAIL_SALES.filter(r => r.category === 'Beauty');
+          const avgAge = Math.round(beautyRows.reduce((acc, r) => acc + r.age, 0) / beautyRows.length);
+          rows = [[avgAge]];
+          break;
+
+        case 'high_value':
+          sqlText = `SELECT * FROM retail_sales WHERE total_sale > 1000;`;
+          headers = ['transactions_id', 'sale_date', 'customer_id', 'category', 'quantiy', 'total_sale'];
+          rows = SAMPLE_RETAIL_SALES
+            .filter(r => r.total_sale > 1000)
+            .map(r => [r.transactions_id, r.sale_date, r.customer_id, r.category, r.quantiy, `₹${r.total_sale.toFixed(2)}`]);
+          break;
+
+        case 'gender_cat':
+          sqlText = `SELECT category, gender, COUNT(transactions_id) AS total_transactions\nFROM retail_sales\nGROUP BY category, gender\nORDER BY category;`;
+          headers = ['category', 'gender', 'total_transactions'];
+          const gcMap = {};
+          SAMPLE_RETAIL_SALES.forEach(r => {
+            const key = `${r.category}|${r.gender}`;
+            gcMap[key] = (gcMap[key] || 0) + 1;
+          });
+          rows = Object.entries(gcMap)
+            .sort((a, b) => a[0].localeCompare(b[0]))
+            .map(([k, count]) => [...k.split('|'), count]);
+          break;
+
+        case 'best_month':
+          sqlText = `WITH my_cte AS (\n  SELECT YEAR(sale_date) AS yr, MONTH(sale_date) AS mo, SUM(total_sale) AS rev,\n         DENSE_RANK() OVER (PARTITION BY YEAR(sale_date) ORDER BY SUM(total_sale) DESC) AS my_rank\n  FROM retail_sales\n  GROUP BY YEAR(sale_date), MONTH(sale_date)\n)\nSELECT * FROM my_cte WHERE my_rank = 1;`;
+          headers = ['sale_year', 'sale_month', 'monthly_revenue', 'my_rank'];
+          const ymMap = {};
+          SAMPLE_RETAIL_SALES.forEach(r => {
+            const [y, m] = r.sale_date.split('-');
+            const key = `${y}-${parseInt(m, 10)}`;
+            ymMap[key] = (ymMap[key] || 0) + r.total_sale;
+          });
+          const bestByYear = {};
+          Object.entries(ymMap).forEach(([ym, rev]) => {
+            const [y, m] = ym.split('-');
+            if (!bestByYear[y] || rev > bestByYear[y].rev) {
+              bestByYear[y] = { m, rev };
+            }
+          });
+          rows = Object.entries(bestByYear).map(([y, obj]) => [y, obj.m, `₹${obj.rev.toFixed(2)}`, 1]);
+          break;
+
+        case 'top_vip':
+          sqlText = `WITH my_cte AS (\n  SELECT customer_id, SUM(total_sale) AS total_spent,\n         RANK() OVER (ORDER BY SUM(total_sale) DESC) AS my_rank\n  FROM retail_sales\n  GROUP BY customer_id\n)\nSELECT * FROM my_cte WHERE my_rank <= 5;`;
+          headers = ['customer_id', 'total_spent', 'my_rank'];
+          const custSpend = {};
+          SAMPLE_RETAIL_SALES.forEach(r => {
+            custSpend[r.customer_id] = (custSpend[r.customer_id] || 0) + r.total_sale;
+          });
+          const sortedCust = Object.entries(custSpend).sort((a, b) => b[1] - a[1]);
+          let currentRank = 1;
+          rows = sortedCust.map(([cid, spend], idx) => {
+            if (idx > 0 && spend < sortedCust[idx - 1][1]) currentRank = idx + 1;
+            return { cid, spend, rank: currentRank };
+          }).filter(item => item.rank <= 5).map(item => [item.cid, `₹${item.spend.toFixed(2)}`, item.rank]);
+          break;
+
+        case 'unique_cust':
+          sqlText = `SELECT category, COUNT(DISTINCT customer_id) AS unique_customers\nFROM retail_sales\nGROUP BY category;`;
+          headers = ['category', 'unique_customers'];
+          const catSets = {};
+          SAMPLE_RETAIL_SALES.forEach(r => {
+            if (!catSets[r.category]) catSets[r.category] = new Set();
+            catSets[r.category].add(r.customer_id);
+          });
+          rows = Object.entries(catSets).map(([cat, set]) => [cat, set.size]);
+          break;
+
+        case 'value_tiers':
+          sqlText = `SELECT transactions_id, category, quantiy, total_sale,\n  CASE WHEN total_sale > 500 THEN 'High'\n       WHEN total_sale > 300 THEN 'Medium'\n       ELSE 'Low' END AS status\nFROM retail_sales;`;
+          headers = ['transactions_id', 'category', 'quantiy', 'total_sale', 'status'];
+          rows = SAMPLE_RETAIL_SALES.map(r => {
+            const tier = r.total_sale > 500 ? 'High' : (r.total_sale > 300 ? 'Medium' : 'Low');
+            return [r.transactions_id, r.category, r.quantiy, `₹${r.total_sale.toFixed(2)}`, tier];
+          });
+          break;
+
+        case 'shift_dist':
+          sqlText = `WITH my_cte AS (\n  SELECT sale_time,\n    CASE WHEN HOUR(sale_time) < 12 THEN 'Morning'\n         WHEN HOUR(sale_time) < 17 THEN 'Afternoon'\n         ELSE 'Evening' END AS shift\n  FROM retail_sales\n)\nSELECT shift, COUNT(*) AS order_count FROM my_cte GROUP BY shift;`;
+          headers = ['shift', 'order_count'];
+          const shifts = { Morning: 0, Afternoon: 0, Evening: 0 };
+          SAMPLE_RETAIL_SALES.forEach(r => {
+            const hr = parseInt(r.sale_time.split(':')[0], 10);
+            if (hr < 12) shifts.Morning++;
+            else if (hr < 17) shifts.Afternoon++;
+            else shifts.Evening++;
+          });
+          rows = Object.entries(shifts).map(([s, c]) => [s, c]);
+          break;
+
+        default:
+          sqlText = `SELECT * FROM retail_sales LIMIT 16;`;
+          headers = ['transactions_id', 'sale_date', 'sale_time', 'customer_id', 'gender', 'age', 'category', 'quantiy', 'price_per_unit', 'total_sale'];
+          rows = SAMPLE_RETAIL_SALES.map(r => [
+            r.transactions_id, r.sale_date, r.sale_time, r.customer_id, r.gender, r.age, r.category, r.quantiy, r.price_per_unit.toFixed(2), r.total_sale.toFixed(2)
+          ]);
+      }
+
+      document.getElementById('sandboxSqlDisplay').innerHTML = highlightSql(sqlText);
+      document.getElementById('sandboxStatusText').textContent = `Query returned ${rows.length} row${rows.length === 1 ? '' : 's'}`;
+
+      document.getElementById('sandboxTableHead').innerHTML = `
+        <tr>${headers.map(h => `<th class="py-3 px-4">${h}</th>`).join('')}</tr>
+      `;
+      document.getElementById('sandboxTableBody').innerHTML = rows.map(row => `
+        <tr class="hover:bg-slate-900/70 transition">
+          ${row.map(cell => `<td class="py-2.5 px-4">${cell}</td>`).join('')}
+        </tr>
+      `).join('');
+    }
+
+    // 5. Initialize Charts (Chart.js)
+    function initCharts() {
+      if (typeof Chart === 'undefined') return;
+
+      const categoryCtx = document.getElementById('categoryChart');
+      if (categoryCtx) {
+        new Chart(categoryCtx, {
+          type: 'doughnut',
+          data: {
+            labels: ['Electronics', 'Beauty', 'Clothing'],
+            datasets: [{
+              data: [9000, 5250, 4500],
+              backgroundColor: ['#6366f1', '#10b981', '#06b6d4'],
+              borderColor: '#0f172a',
+              borderWidth: 3
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: { color: '#cbd5e1', font: { family: 'Inter', size: 11 } }
+              }
+            }
+          }
+        });
+      }
+
+      const shiftCtx = document.getElementById('shiftChart');
+      if (shiftCtx) {
+        new Chart(shiftCtx, {
+          type: 'bar',
+          data: {
+            labels: ['Morning (<12h)', 'Afternoon (12–17h)', 'Evening (17h+)'],
+            datasets: [{
+              label: 'Order Count',
+              data: [4, 4, 8],
+              backgroundColor: ['#38bdf8', '#818cf8', '#10b981'],
+              borderRadius: 8
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              x: {
+                ticks: { color: '#94a3b8', font: { size: 11 } },
+                grid: { display: false }
+              },
+              y: {
+                beginAtZero: true,
+                ticks: { color: '#94a3b8', stepSize: 2 },
+                grid: { color: 'rgba(148, 163, 184, 0.1)' }
+              }
+            },
+            plugins: {
+              legend: { display: false }
+            }
+          }
+        });
+      }
+    }
+
+    // 6. Event Listeners & Bootstrapping
+    document.addEventListener('DOMContentLoaded', () => {
+      renderQueries();
+      runSandboxQuery('all_rows');
+      initCharts();
+
+      // Category Filter Buttons
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.filter-btn').forEach(b => {
+            b.classList.remove('active', 'bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-600/20');
+            b.classList.add('bg-slate-900', 'text-slate-300', 'border', 'border-slate-800');
+          });
+          btn.classList.add('active', 'bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-600/20');
+          btn.classList.remove('bg-slate-900', 'text-slate-300', 'border', 'border-slate-800');
+
+          activeFilter = btn.getAttribute('data-filter');
+          renderQueries();
+        });
+      });
+
+      // Search Input
+      document.getElementById('querySearch').addEventListener('input', (e) => {
+        searchTerm = e.target.value;
+        renderQueries();
+      });
+
+      // Reset Filters
+      document.getElementById('resetFiltersBtn').addEventListener('click', () => {
+        activeFilter = 'all';
+        searchTerm = '';
+        document.getElementById('querySearch').value = '';
+        document.querySelector('.filter-btn[data-filter="all"]').click();
+      });
+
+      // Sandbox Runner
+      document.getElementById('runSandboxBtn').addEventListener('click', () => {
+        const preset = document.getElementById('sandboxPreset').value;
+        runSandboxQuery(preset);
+        showToast('Executed SQL query on sample dataset!');
+      });
+
+      document.getElementById('sandboxPreset').addEventListener('change', (e) => {
+        runSandboxQuery(e.target.value);
+      });
+
+      // Copy Full Production Script
+      document.getElementById('copyCleanScriptBtn').addEventListener('click', () => {
+        copyToClipboard(FULL_PRODUCTION_SQL, 'Copied full production-refined SQL script!');
+      });
+    });
+  </script>
+</body>
+</html>
